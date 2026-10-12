@@ -19,7 +19,7 @@ interval:
           }
 
           // Haal de klimaatgegevens (thermostaat) op
-          auto climate = id(pelletstove_climate);
+          auto climate = id(Stove);
           
           // Controleer of de sensoren geldige waarden hebben
           if (climate->mode == climate::CLIMATE_MODE_OFF) {
@@ -38,7 +38,7 @@ interval:
 
           // Dit haalt de huidige ventilator-entiteit of selectie op uit de Duepi-core
           // We sturen de ventilator aan op basis van het berekende verschil
-          auto call = id(pelletstove_climate).make_call();
+          auto call = id(Stove).make_call();
 
           if (temp_verschil > 2.0) {
             // Kamer is nog koud: Zet de ventilator op High (indien nog niet het geval)
