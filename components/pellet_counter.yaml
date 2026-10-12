@@ -8,19 +8,16 @@ switch:
     optimistic: true
 
 globals:
-  # Slaat het totaal aantal verbruikte kilo's permanent op in het flashgeheugen
   - id: totaal_kilos_verbruikt
     type: float
     restore_value: yes
-    initial_value: '0.0'
-  
-  # Houdt de vorige meting bij om het verschil te kunnen berekenen
+    initial_value: "0.0"
+
   - id: vorige_pellet_niveau
     type: float
     restore_value: yes
-    initial_value: '0.0'
+    initial_value: "0.0"
 
-# Invoerveld dat automatisch in Home Assistant verschijnt voor het gewicht van de zak
 number:
   - platform: template
     name: "Gewicht Per Pelletzak"
@@ -30,71 +27,58 @@ number:
     min_value: 5.0
     max_value: 25.0
     step: 0.5
-    initial_value: 15.0 # Standaardwaarde voor de meeste pelletzakken
+    initial_value: 15.0
     optimistic: true
 
-# Rekensensoren en Resetknop voor Home Assistant
-template:
-  # Sensor 1: Totaal verbruik in Kilogram
-  - sensor:
-      - platform: template
-        name: "Totaal Verbruikte Pellets (Gewicht)"
-        id: totaal_verbruik_kg
-        unit_of_measurement: "kg"
-        accuracy_decimals: 1
-        icon: "mdi:scale-balance"
-        update_interval: 30s
-        lambda: |-
-          return id(totaal_kilos_verbruikt);
+sensor:
+  - platform: template
+    name: "Totaal Verbruikte Pellets (Gewicht)"
+    id: totaal_verbruik_kg
+    unit_of_measurement: "kg"
+    accuracy_decimals: 1
+    icon: "mdi:scale-balance"
+    update_interval: 30s
+    lambda: |-
+      return id(totaal_kilos_verbruikt);
 
-  # Sensor 2: Totaal verbruik omgerekend naar aantal Zakken
-  - sensor:
-      - platform: template
-        name: "Totaal Verbruikte Pelletzakken"
-        id: totaal_verbruik_zakken
-        unit_of_measurement: "zakken"
-        accuracy_decimals: 1
-        icon: "mdi:bag-personal"
-        update_interval: 30s
-        lambda: |-
-          float zak_gewicht = id(gewicht_per_zak).state;
-          if (zak_gewicht <= 0.0) return 0.0;
-          return id(totaal_kilos_verbruikt) / zak_gewicht;
+  - platform: template
+    name: "Totaal Verbruikte Pelletzakken"
+    id: totaal_verbruik_zakken
+    unit_of_measurement: "zakken"
+    accuracy_decimals: 1
+    icon: "mdi:bag-personal"
+    update_interval: 30s
+    lambda: |-
+      float zak_gewicht = id(gewicht_per_zak).state;
+      if (zak_gewicht <= 0.0)
+        return 0.0;
+      return id(totaal_kilos_verbruikt) / zak_gewicht;
 
-  # Resetknop: Om de kilometerteller weer op 0 te zetten
-  - button:
-      - platform: template
-        name: "Reset Pellet Totaalteller"
-        id: reset_pellet_teller
-        icon: "mdi:counter"
-        on_press:
-          then:
-            - lambda: |-
-                id(totaal_kilos_verbruikt) = 0.0;
+button:
+  - platform: template
+    name: "Reset Pellet Totaalteller"
+    id: reset_pellet_teller
+    icon: "mdi:counter"
+    on_press:
+      - lambda: |-
+          id(totaal_kilos_verbruikt) = 0.0;
 
-# Automatische verbruiks-tracker logica
 interval:
-  - interval: 5min # Checkt elke 5 minuten de daling om kleine schommelingen uit te filteren
+  - interval: 5min
     then:
       - lambda: |-
           float huidig_niveau = id(pellet_niveau).state;
           float vorig_niveau = id(vorige_pellet_niveau);
-          
-          // Zorg dat we geldige sensorwaarden hebben
+
           if (!std::isnan(huidig_niveau) && vorig_niveau > 0.0) {
-            
-            // Als het niveau is gedaald, is er verbruik geweest
+
             if (huidig_niveau < vorig_niveau) {
               float daling_procent = vorig_niveau - huidig_niveau;
-              
-              // AANNAME: We gaan uit van een gemiddelde bunkerinhoud van 15kg. 
-              // 1% daling staat dan gelijk aan (15kg / 100) = 0.15 kg pellets.
+
               float verbruikte_kilos = daling_procent * 0.15;
-              
-              // Tel de kilo's op bij het totaal
+
               id(totaal_kilos_verbruikt) += verbruikte_kilos;
             }
           }
-          
-          // Sla het huidige niveau op voor de volgende check
+
           id(vorige_pellet_niveau) = huidig_niveau;
