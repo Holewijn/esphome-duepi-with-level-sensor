@@ -6,7 +6,6 @@ switch:
     id: onderhoud_schakelaar
     icon: "mdi:tools"
     optimistic: true
-    initial_state: true
 
 globals:
   - id: branduren_teller
