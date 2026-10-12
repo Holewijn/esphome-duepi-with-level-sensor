@@ -7,7 +7,6 @@ switch:
     id: auto_fan_tuner
     icon: "mdi:fan-auto"
     optimistic: true
-    initial_state: true
 
 # Automatische logica die elke 30 seconden het temperatuurverschil controleert
 interval:
