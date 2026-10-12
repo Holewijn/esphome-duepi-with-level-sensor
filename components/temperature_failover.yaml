@@ -1,0 +1,49 @@
+# GitHub: components/temperature_failover.yaml
+
+sensor:
+  # 1. Haal de externe kamertemperatuur live op uit Home Assistant via de substitution variabele
+  - platform: homeassistant
+    name: "Externe Kamertemperatuur Link"
+    id: externe_kamertemp
+    entity_id: ${externe_ha_temperatuursensor} # <--- Kijkt nu automatisch naar pelletstove.yaml
+    internal: true 
+    accuracy_decimals: 1
+
+  # 2. De uiteindelijke virtuele sensor die de kachelthermostaat gaat aansturen
+  - platform: template
+    name: "Thermostaat Sturende Temperatuur"
+    id: actieve_sturende_temperatuur
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    icon: "mdi:shield-sync"
+    update_interval: 10s
+    lambda: |-
+      float extern = id(externe_kamertemp).state;
+      float intern = id(ambient_temp).state; // Dit ID komt uit de Duepi-core package (sensor.yaml)
+
+      // CONTROLE: Is de externe sensor online en stuurt deze een geldige waarde?
+      if (!std::isnan(extern) && extern > 0.0) {
+        return extern; // Gebruik de externe woonkamersensor
+      } else {
+        // Externe sensor is offline of geeft fouten: schakel over op kachel-back-up
+        static bool meld_fout = true;
+        if (meld_fout) {
+          ESP_LOGW("temp_failover", "WAARSCHUWING: Externe sensor offline! Schakelt over op kachel-back-upsensor.");
+          meld_fout = false; 
+        }
+        return intern; // Gebruik de interne kachelsensor
+      }
+
+text_sensor:
+  # Geeft in Home Assistant aan welke bron momenteel actief is
+  - platform: template
+    name: "Actieve Temperatuurbron"
+    id: actieve_temp_bron
+    icon: "mdi:database-marker"
+    update_interval: 10s
+    lambda: |-
+      if (!std::isnan(id(externe_kamertemp).state) && id(externe_kamertemp).state > 0.0) {
+        return {"Externe Woonkamersensor (Hoofd)"};
+      } else {
+        return {"Interne Kachelsensor (Back-up)"};
+      }
