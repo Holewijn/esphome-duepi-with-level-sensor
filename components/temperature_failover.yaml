@@ -19,7 +19,7 @@ sensor:
     update_interval: 10s
     lambda: |-
       float extern = id(externe_kamertemp).state;
-      float intern = id(ambient_temp).state; // Dit ID komt uit de Duepi-core package (sensor.yaml)
+      float intern = id(room_temp_stove).state; // Dit ID komt uit de Duepi-core package (sensor.yaml)
 
       // CONTROLE: Is de externe sensor online en stuurt deze een geldige waarde?
       if (!std::isnan(extern) && extern > 0.0) {
