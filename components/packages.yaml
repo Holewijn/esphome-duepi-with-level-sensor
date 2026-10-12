@@ -15,6 +15,7 @@ packages:
   pellet_teller: !include pellet_counter.yaml
   slimme_ventilator: !include fan_tuner.yaml
   verbruiks_ai: !include pellet_efficiency.yaml
+  temperatuur_failover: !include temperature_failover.yaml
 # Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
 external_components:
   - source:
