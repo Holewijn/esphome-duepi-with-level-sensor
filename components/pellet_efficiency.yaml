@@ -1,5 +1,13 @@
 # GitHub: components/pellet_efficiency.yaml
 
+switch:
+  - platform: template
+    name: "Module: Verbruiks-AI"
+    id: ai_schakelaar
+    icon: "mdi:brain"
+    optimistic: true
+    initial_state: true
+
 sensor:
   # Rekenmodule die het procentuele verbruik omzet naar daadwerkelijke kilo's per uur
   - platform: template
