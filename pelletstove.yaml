@@ -3,10 +3,6 @@ esphome:
   friendly_name: "Pelletkachel"
   min_version: 2026.9.1
 
-dashboard_import:
-  package_import_url: github://Holewijn/esphome-duepi-with-level-sensor/pelletstove.yaml@main
-
-
 esp32:
   board: esp32dev # NodeMCU WROOM 32 met CH340 chip
 
