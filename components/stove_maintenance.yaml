@@ -23,13 +23,11 @@ time:
           if:
             condition:
               and:
-                - switch.is_on:
-                    id: onderhoud_schakelaar
-
-                - sensor.in_range:
-                    id: pellet_verbruik
-                    below: -0.5
-
+                - condition: switch.is_on
+                  id: onderhoud_schakelaar
+                - condition: sensor.in_numeric_range
+                  id: pellet_verbruik
+                  below: -0.5
             then:
               - lambda: |-
                   id(branduren_teller) += (1.0 / 60.0);
