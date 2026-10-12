@@ -44,6 +44,8 @@ substitutions:
   tx_pin_esp: '17'  # Fysieke pin G17 op de ESP32 -> RX kachel
   rx_pin_esp: '16'  # Fysieke pin G16 op de ESP32 -> TX kachel
 
+    externe_ha_temperatuursensor: "sensor.woonkamer_temperatuur" 
+
 # ========================================================
 # Live inladen uit je EIGEN GitHub repository
 # ========================================================
