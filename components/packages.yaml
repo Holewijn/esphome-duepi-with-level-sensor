@@ -21,6 +21,7 @@ packages:
 # Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
 external_components:
   - source:
-      type: local
-      path: components # <--- Verander de punt (.) in 'components'
+      type: git
+      url: https://github.com
+      ref: main
     components: [duepi]
