@@ -6,7 +6,6 @@ switch:
     id: ai_schakelaar
     icon: "mdi:brain"
     optimistic: true
-    initial_state: true
 
 sensor:
   # Rekenmodule die het procentuele verbruik omzet naar daadwerkelijke kilo's per uur
