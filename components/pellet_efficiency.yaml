@@ -41,7 +41,7 @@ sensor:
 
   # Extra bonus-sensor: Zet het verbruik om naar grammen per minuut (leuk voor live grafieken!)
   - platform: template
-    name: "Actueel Pelletverbruik (Gram/Min)"
+    name: "Actueel Pelletverbruik (Gram per Min)"
     id: actueel_verbruik_gmin
     unit_of_measurement: "g/min"
     accuracy_decimals: 0
