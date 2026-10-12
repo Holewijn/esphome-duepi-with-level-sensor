@@ -32,7 +32,7 @@ api:
 
 ota:
   - platform: esphome
-    password: "KiesHierEenWachtwoord"
+    password: !secret ota_encryption_key
 
 # ========================================================
 # Substitutions voor de ESP32 & UART2 pinnen
