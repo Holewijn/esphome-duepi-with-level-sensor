@@ -38,8 +38,6 @@ Because we are using an ESP32, the UART communication to the stove is moved to h
 
 ---
 
-## 🚀 Getting Started & Calibration
-
 ## 🚀 Getting Started, Calibration & External Temperature Sensor
 
 ### 1. General Setup & Wi-Fi
