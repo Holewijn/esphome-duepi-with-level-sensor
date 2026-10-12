@@ -47,7 +47,7 @@ substitutions:
   externe_ha_temperatuursensor: "sensor.woonkamer_temperatuur" 
 
 # ========================================================
-# Live inladen uit je EIGEN GitHub repository
+# Live modulaire pakketten inladen uit je EIGEN GitHub repo
 # ========================================================
 packages:
   duepi_local:
@@ -56,36 +56,47 @@ packages:
     ref: main
 
 # ========================================================
-# HC-SR04 Ultrasone Pellet Niveausensor (Direct op 3.3V)
+# Fysieke Basis Niveausensor & Dynamische HA Kalibratie
 # ========================================================
 sensor:
+  # De fysieke sensor leest de afstand en slaat deze intern op
   - platform: ultrasonic
-    trigger_pin: GPIO23  # Fysieke pin G23 / D23
-    echo_pin: GPIO22     # Fysieke pin G22 / D22
+    trigger_pin: GPIO23  
+    echo_pin: GPIO22     
+    id: ruwe_afstand_sensor_intern
+    internal: true
+    update_interval: 60s 
+    filters:
+      - filter_out: NAN
+      - median:
+          window_size: 5
+          send_every: 1
+          send_at_least: 1
+
+  # Het uiteindelijke percentage berekent de ESP32 live op basis van je HA schuifbalken
+  - platform: template
     name: "Pelletvoorraad Niveau"
     id: pellet_niveau
     icon: "mdi:heater"
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    update_interval: 60s # Meet om de minuut om onnodige data-vervuiling te voorkomen
-    
-    filters:
-      # Filter ongeldige 'NAN' metingen (bijvoorbeeld door opvliegend stof tijdens het vullen)
-      - filter_out: NAN
-      
-      # Neemt het gemiddelde (mediaan) van de laatste 5 metingen tegen schommelingen
-      - median:
-          window_size: 5
-          send_every: 1
-          send_at_least: 1
-      
-      # KALIBRATIE (Aanpassen aan de hand van jouw pelletbunker):
-      # Formule: [gemeten afstand in meters] -> [gewenst percentage]
-      - calibrate_linear:
-          - 0.45 -> 0    # Afstand in meters naar de bodem (leeg)
-          - 0.10 -> 100  # Afstand in meters tot de pellets (vol)
-          
-      # Zorg ervoor dat de sensor door een meetfout nooit buiten de 0% of 100% schiet
-      - clamp:
-          min_value: 0
-          max_value: 100
+    update_interval: 10s
+    lambda: |-
+      float ruw = id(ruwe_afstand_sensor_intern).state;
+      float leeg = id(kalibratie_leeg).state;
+      float vol = id(kalibratie_vol).state;
+
+      if (std::isnan(ruw) || ruw <= 0.0) {
+        return {};
+      }
+
+      if (std::abs(leeg - vol) < 0.01) {
+        return 0.0;
+      }
+
+      float percentage = ((ruw - leeg) / (vol - leeg)) * 100.0;
+
+      if (percentage < 0.0) percentage = 0.0;
+      if (percentage > 100.0) percentage = 100.0;
+
+      return percentage;
