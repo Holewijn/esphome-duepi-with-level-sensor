@@ -51,7 +51,7 @@ substitutions:
 # ========================================================
 packages:
   duepi_local:
-    url: https://github.com
+    url: https://github.com/Holewijn/esphome-duepi-with-level-sensor.git
     file: components/packages.yaml
     ref: main
 
