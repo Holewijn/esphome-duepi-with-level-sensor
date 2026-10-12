@@ -1,50 +1,89 @@
 esphome:
-  name: pelletkachel
-  friendly_name: Pellet Kachel
+  name: pelletstove
+  friendly_name: "Pelletkachel"
+  
+  # Zorgt ervoor dat Home Assistant updates direct uit jouw EIGEN GitHub repo controleert
+  dashboard_import:
+    package_url: github://Holewijn/esphome-duepi-with-level-sensor/pelletstove.yaml@main
 
-api:
-  encryption:
-    key: !secret encryption_key
+esp32:
+  board: esp32dev # NodeMCU WROOM 32 met CH340 chip
 
-esp8266:
-  board: d1
+# ========================================================
+# Netwerk- en Beveiligingsinstellingen
+# ========================================================
+wifi:
+  ssid: "JOUW_WIFI_NAAM"          # Vervang door je eigen WiFi netwerknaam
+  password: "JOUW_WIFI_WACHTWOORD" # Vervang door je eigen WiFi wachtwoord
+
+  # Handige fallback hotspot als je WiFi wegvalt
+  ap:
+    ssid: "Pelletkachel Fallback Hotspot"
+    password: "PelletKachelPWD"
+
+captcha:
 
 logger:
   level: INFO
-  baud_rate: 0 #disable logging over uart
-  logs:
-    uart_debug: NONE
 
-#use this for esp-c3 mini
-#esp32
-  #board: lolin_c3_mini
-  #framework:
-    #type: esp-idf
+api:
+  encryption:
+    key: "GENEREER_HIER_EEN_ESPHOME_ENCRYPTION_KEY" # Vul je eigen HA encryptiesleutel in
 
 ota:
   - platform: esphome
-    password: "CreateYourOwn"
+    password: "KiesHierEenWachtwoord"
 
-wifi:
-  networks:
-    - ssid: !secret wifi_ssid
-      password: !secret wifi_password
-    - ssid: !secret wifi_ssid1
-      password: !secret wifi_password1
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Pelletkachel Fallback Hotspot"
-    password: "Pelletkachel"
-
+# ========================================================
+# Substitutions voor de ESP32 & UART2 pinnen
+# ========================================================
 substitutions:
-  min_temp: "10"     #set minimum temperature for climate
-  max_temp: "35"     #set maximum temperature for climate
-  temp_unit: "°C"    #set climate unit, use "°C" or "°F"
-  tx_pin_esp: '1'    #TX pin on esp module
-  rx_pin_esp: '3'    #RX pin on esp module
+  min_temp: "10"    # Minimum temperatuur voor de thermostaat in HA
+  max_temp: "35"    # Maximum temperatuur voor de thermostaat in HA
+  temp_unit: "°C"   # Temperatuureenheid
+  tx_pin_esp: '17'  # Fysieke pin G17 op de ESP32 -> RX kachel
+  rx_pin_esp: '16'  # Fysieke pin G16 op de ESP32 -> TX kachel
 
+# ========================================================
+# Live inladen uit je EIGEN GitHub repository
+# ========================================================
 packages:
-  duepi:
-    url: https://github.com/mvroosmalen1970/ESPHome-Duepi.git
+  duepi_local:
+    url: https://github.com
     file: components/packages.yaml
-    ref: main #change if you like to test a beta version
+    ref: main
+
+# ========================================================
+# HC-SR04 Ultrasone Pellet Niveausensor (Direct op 3.3V)
+# ========================================================
+sensor:
+  - platform: ultrasonic
+    trigger_pin: GPIO23  # Fysieke pin G23 / D23
+    echo_pin: GPIO22     # Fysieke pin G22 / D22
+    name: "Pelletvoorraad Niveau"
+    id: pellet_niveau
+    icon: "mdi:heater"
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    update_interval: 60s # Meet om de minuut om onnodige data-vervuiling te voorkomen
+    
+    filters:
+      # Filter ongeldige 'NAN' metingen (bijvoorbeeld door opvliegend stof tijdens het vullen)
+      - filter_out: NAN
+      
+      # Neemt het gemiddelde (mediaan) van de laatste 5 metingen tegen schommelingen
+      - median:
+          window_size: 5
+          send_every: 1
+          send_at_least: 1
+      
+      # KALIBRATIE (Aanpassen aan de hand van jouw pelletbunker):
+      # Formule: [gemeten afstand in meters] -> [gewenst percentage]
+      - calibrate_linear:
+          - 0.45 -> 0    # Afstand in meters naar de bodem (leeg)
+          - 0.10 -> 100  # Afstand in meters tot de pellets (vol)
+          
+      # Zorg ervoor dat de sensor door een meetfout nooit buiten de 0% of 100% schiet
+      - clamp:
+          min_value: 0
+          max_value: 100
