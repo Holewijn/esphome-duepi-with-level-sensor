@@ -14,6 +14,7 @@ packages:
   kachel_onderhoud: !include stove_maintenance.yaml
   pellet_teller: !include pellet_counter.yaml
   slimme_ventilator: !include fan_tuner.yaml
+  verbruiks_ai: !include pellet_efficiency.yaml
 # Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
 external_components:
   - source:
