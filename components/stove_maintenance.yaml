@@ -1,0 +1,58 @@
+# GitHub: components/stove_maintenance.yaml
+
+globals:
+  - id: branduren_teller
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+time:
+  - platform: sntp
+    id: sntp_time
+    on_time:
+      - seconds: 0
+        minutes: /1
+        then:
+          if:
+            condition:
+              sensor.in_numeric_range:
+                id: pellet_verbruik
+                below: -0.5
+            then:
+              - lambda: |-
+                  id(branduren_teller) += (1.0 / 60.0);
+            
+template:
+  - sensor:
+      - platform: template
+        name: "Branduren Sinds Schoonmaak"
+        id: branduren_schoonmaak
+        unit_of_measurement: "h"
+        accuracy_decimals: 1
+        icon: "mdi:timelapse"
+        update_interval: 30s
+        lambda: |-
+          return id(branduren_teller);
+
+  - binary_sensor:
+      - platform: template
+        name: "Pelletkachel Onderhoud Nodig"
+        id: aslade_vol_status
+        device_class: problem
+        icon: "mdi:ash"
+        lambda: |-
+          if (id(branduren_teller) >= 20.0) {
+            return true; 
+          } else {
+            return false;
+          }
+
+  - button:
+      - platform: template
+        name: "Reset Onderhoudsteller (Aslade Geleegd)"
+        id: reset_onderhoud
+        icon: "mdi:broom"
+        on_press:
+          then:
+            - lambda: |-
+                id(branduren_teller) = 0.0;
