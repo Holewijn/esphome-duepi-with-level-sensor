@@ -17,9 +17,10 @@ packages:
   verbruiks_ai: !include pellet_efficiency.yaml
   temperatuur_failover: !include temperature_failover.yaml
   pellet_kalibratie: !include level_sensor_calibration.yaml
+
 # Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
 external_components:
   - source:
       type: local
-      path: .
+      path: components # <--- Verander de punt (.) in 'components'
     components: [duepi]
