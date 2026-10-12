@@ -1,12 +1,19 @@
-#All packages used
-<<:
-  - !include script.yaml
-  - !include globals.yaml
-  - !include sensor.yaml
-  - !include number.yaml
-  - !include switch.yaml
-  - !include climate.yaml
-  - !include uart.yaml
-  - !include time.yaml
-  - !include text_sensor.yaml
-  - !include binary_sensor.yaml
+# All packages used (In jouw eigen repo!)
+packages:
+  duepi_scripts: !include script.yaml
+  duepi_globals: !include globals.yaml
+  duepi_sensors: !include sensor.yaml
+  duepi_numbers: !include number.yaml
+  duepi_switches: !include switch.yaml
+  duepi_climate: !include climate.yaml
+  duepi_uart_base: !include uart.yaml
+  duepi_time: !include time.yaml
+  duepi_text: !include text_sensor.yaml
+  duepi_binary: !include binary_sensor.yaml
+
+# Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
+external_components:
+  - source:
+      type: local
+      path: .
+    components: [duepi]
