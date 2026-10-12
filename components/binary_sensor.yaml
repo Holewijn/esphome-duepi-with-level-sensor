@@ -1,34 +1,5 @@
-# Pad van de te monitoren map
-$map = "M:\Machines\DMG_DMU85\TOOLFILTER"
-
-# FileSystemWatcher instellen
-$watcher = New-Object System.IO.FileSystemWatcher
-$watcher.Path = $map
-$watcher.Filter = "*"  # alle bestanden
-$watcher.NotifyFilter = [System.IO.NotifyFilters]'FileName, LastWrite'
-
-# Actie bij een nieuw bestand
-$action = {
-    $nieuwBestand = $Event.SourceEventArgs.FullPath
-
-    # Wacht tot bestand volledig is weggeschreven (optioneel)
-    while (-not (Test-Path $nieuwBestand)) { Start-Sleep -Milliseconds 100 }
-
-    Write-Host "Nieuw bestand gevonden: $nieuwBestand"
-
-    try {
-        Start-Process -FilePath $nieuwBestand
-    } catch {
-        Write-Host "Kon bestand niet openen: $_"
-    }
-}
-
-# Event koppelen
-Register-ObjectEvent $watcher Created -Action $action
-
-# FileSystemWatcher starten
-$watcher.EnableRaisingEvents = $true
-
-# Script actief houden
-Write-Host "Monitoring map: $map. Druk op Ctrl+C om te stoppen."
-while ($true) { Start-Sleep -Seconds 5 }
+# GitHub: components/binary_sensor.yaml
+binary_sensor:
+  - platform: duepi
+    puffer_sol_state:
+      name: "Pelletkachel Puffer Status"
