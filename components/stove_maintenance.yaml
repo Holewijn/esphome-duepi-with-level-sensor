@@ -23,9 +23,9 @@ time:
           if:
             condition:
               and:
-                - condition: switch.is_on
+                - switch.is_on:
                   id: onderhoud_schakelaar
-                - condition: sensor.in_numeric_range
+                - sensor.in_range:
                   id: pellet_verbruik
                   below: -0.5
             then:
