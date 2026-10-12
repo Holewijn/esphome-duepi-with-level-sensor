@@ -22,6 +22,6 @@ packages:
 external_components:
   - source:
       type: git
-      url: https://github.com
+      url: https://github.com/Holewijn/esphome-duepi-with-level-sensor
       ref: main
     components: [duepi]
