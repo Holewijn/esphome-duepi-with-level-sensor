@@ -13,18 +13,21 @@ esp32:
 # Netwerk- en Beveiligingsinstellingen
 # ========================================================
 wifi:
-  ssid: "JOUW_WIFI_NAAM"          # Vervang door je eigen WiFi netwerknaam
-  password: "JOUW_WIFI_WACHTWOORD" # Vervang door je eigen WiFi wachtwoord
-
-  # Handige fallback hotspot als je WiFi wegvalt
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
+    - ssid: !secret wifi_ssid1
+      password: !secret wifi_password1
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Pelletkachel Fallback Hotspot"
-    password: "PelletKachelPWD"
-
-captcha:
-
+    password: "Pelletkachel"
+    
 logger:
   level: INFO
+  baud_rate: 0 #disable logging over uart
+  logs:
+    uart_debug: NONE
 
 api:
   encryption:
@@ -50,7 +53,7 @@ substitutions:
 # Live modulaire pakketten inladen uit je EIGEN GitHub repo
 # ========================================================
 packages:
-  duepi_local:
+  duepi:
     url: https://github.com/Holewijn/esphome-duepi-with-level-sensor.git
     file: components/packages.yaml
     ref: main
