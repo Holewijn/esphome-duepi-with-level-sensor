@@ -1,17 +1,15 @@
-# GitHub: components/stove_maintenance.yaml
-
 switch:
   - platform: template
     name: "Module: Onderhoudsteller"
     id: onderhoud_schakelaar
-    icon: "mdi:tools"
+    icon: mdi:tools
     optimistic: true
 
 globals:
   - id: branduren_teller
     type: float
     restore_value: yes
-    initial_value: '0.0'
+    initial_value: "0.0"
 
 time:
   - platform: sntp
@@ -20,52 +18,42 @@ time:
       - seconds: 0
         minutes: /1
         then:
-          if:
-            condition:
-              and:
-                - switch.is_on:
-                  id: onderhoud_schakelaar
-                - sensor.in_range:
-                  id: pellet_verbruik
-                  below: -0.5
-            then:
-              - lambda: |-
-                  id(branduren_teller) += (1.0 / 60.0);
-            
-template:
-  - sensor:
-      - platform: template
-        name: "Branduren Sinds Schoonmaak"
-        id: branduren_schoonmaak
-        unit_of_measurement: "h"
-        accuracy_decimals: 1
-        icon: "mdi:timelapse"
-        update_interval: 30s
-        lambda: |-
-          return id(branduren_teller);
+          - if:
+              condition:
+                and:
+                  - switch.is_on: onderhoud_schakelaar
+              then:
+                - lambda: |-
+                    if (id(pellet_verbruik).state < -0.5) {
+                      id(branduren_teller) += (1.0 / 60.0);
+                    }
 
-  - binary_sensor:
-      - platform: template
-        name: "Pelletkachel Onderhoud Nodig"
-        id: aslade_vol_status
-        device_class: problem
-        icon: "mdi:ash"
-        lambda: |-
-          if (!id(onderhoud_schakelaar).state) {
-            return false;
-          }
-          if (id(branduren_teller) >= 20.0) {
-            return true; 
-          } else {
-            return false;
-          }
+sensor:
+  - platform: template
+    name: "Branduren Sinds Schoonmaak"
+    id: branduren_schoonmaak
+    unit_of_measurement: "h"
+    accuracy_decimals: 1
+    icon: mdi:timelapse
+    update_interval: 30s
+    lambda: |-
+      return id(branduren_teller);
 
-  - button:
-      - platform: template
-        name: "Reset Onderhoudsteller (Aslade Geleegd)"
-        id: reset_onderhoud
-        icon: "mdi:broom"
-        on_press:
-          then:
-            - lambda: |-
-                id(branduren_teller) = 0.0;
+binary_sensor:
+  - platform: template
+    name: "Pelletkachel Onderhoud Nodig"
+    id: aslade_vol_status
+    device_class: problem
+    icon: mdi:ash
+    lambda: |-
+      return id(onderhoud_schakelaar).state &&
+             id(branduren_teller) >= 20.0;
+
+button:
+  - platform: template
+    name: "Reset Onderhoudsteller (Aslade Geleegd)"
+    id: reset_onderhoud
+    icon: mdi:broom
+    on_press:
+      - lambda: |-
+          id(branduren_teller) = 0.0;
