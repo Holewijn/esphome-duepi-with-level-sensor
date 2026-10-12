@@ -9,14 +9,48 @@ switch:
     initial_state: true
 
 sensor:
-  - platform: derivative
+  - platform: template
     name: "Pellet Verbruikssnelheid"
     id: pellet_verbruik
-    sensor: pellet_niveau
     unit_of_measurement: "%/h"
     accuracy_decimals: 1
-    time_window: 30min 
     icon: "mdi:gauge"
+    update_interval: 60s
+    lambda: |-
+      static float vorige_waarde = NAN;
+      static uint32_t vorige_tijd = 0;
+      
+      // Haal de huidige status op van je pellet_niveau sensor
+      float huidige_waarde = id(pellet_niveau).state; 
+      uint32_t huidige_tijd = millis();
+
+      if (std::isnan(huidige_waarde)) {
+        return {};
+      }
+
+      // Eerste meting initialiseren
+      if (std::isnan(vorige_waarde) || vorige_tijd == 0) {
+        vorige_waarde = huidige_waarde;
+        vorige_tijd = huidige_tijd;
+        return 0.0;
+      }
+
+      // Bereken het tijdsverschil in uren
+      float tijds_verschil_uren = (huidige_tijd - vorige_tijd) / 3600000.0;
+      
+      // Voorkom delen door nul bij te snelle opeenvolgende metingen
+      if (tijds_verschil_uren < 0.005) {
+        return id(pellet_verbruik).state;
+      }
+
+      // Bereken de verandering per uur (% / uren)
+      float verandering_per_uur = (huidige_waarde - vorige_waarde) / tijds_verschil_uren;
+
+      // Sla de huidige waarden op voor de volgende run
+      vorige_waarde = huidige_waarde;
+      vorige_tijd = huidige_tijd;
+
+      return verandering_per_uur;
 
 text_sensor:
   - platform: template
