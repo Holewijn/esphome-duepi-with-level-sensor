@@ -32,7 +32,7 @@ logger:
 
 api:
   encryption:
-    key: "GENEREER_HIER_EEN_ESPHOME_ENCRYPTION_KEY" # Vul je eigen HA encryptiesleutel in
+    key: !secret api_encryption_key
 
 ota:
   - platform: esphome
