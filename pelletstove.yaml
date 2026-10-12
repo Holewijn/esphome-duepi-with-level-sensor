@@ -1,10 +1,11 @@
 esphome:
   name: pelletstove
   friendly_name: "Pelletkachel"
-  
-  # Zorgt ervoor dat Home Assistant updates direct uit jouw EIGEN GitHub repo controleert
-  dashboard_import:
-    package_url: github://Holewijn/esphome-duepi-with-level-sensor/pelletstove.yaml@main
+  min_version: 2026.9.1
+
+dashboard_import:
+  package_url: github://Holewijn/esphome-duepi-with-level-sensor/pelletstove.yaml@main
+
 
 esp32:
   board: esp32dev # NodeMCU WROOM 32 met CH340 chip
