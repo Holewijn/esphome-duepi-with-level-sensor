@@ -1,0 +1,68 @@
+# GitHub: components/fan_tuner.yaml
+
+# In- en uitschakelaar voor de automatische ventilator-tuner in Home Assistant
+switch:
+  - platform: template
+    name: "Automatische Ventilator Tuner"
+    id: auto_fan_tuner
+    icon: "mdi:fan-auto"
+    optimistic: true
+    initial_state: true
+
+# Automatische logica die elke 30 seconden het temperatuurverschil controleert
+interval:
+  - interval: 30s
+    then:
+      - lambda: |-
+          // Controleer eerst of de kachel überhaupt aan staat en of de tuner is ingeschakeld
+          if (!id(auto_fan_tuner).state) {
+            return;
+          }
+
+          // Haal de klimaatgegevens (thermostaat) op
+          auto climate = id(pelletstove_climate);
+          
+          // Controleer of de sensoren geldige waarden hebben
+          if (climate->mode == climate::CLIMATE_MODE_OFF) {
+            return; // Kachel staat uit, niks te tunen
+          }
+
+          float huidige_temp = climate->current_temperature;
+          float doel_temp = climate->target_temperature;
+
+          if (std::isnan(huidige_temp) || std::isnan(doel_temp)) {
+            return;
+          }
+
+          // Bereken hoeveel graden de kamer nog moet opwarmen
+          float temp_verschil = doel_temp - huidige_temp;
+
+          // Dit haalt de huidige ventilator-entiteit of selectie op uit de Duepi-core
+          // We sturen de ventilator aan op basis van het berekende verschil
+          auto call = id(pelletstove_climate).make_call();
+
+          if (temp_verschil > 2.0) {
+            // Kamer is nog koud: Zet de ventilator op High (indien nog niet het geval)
+            if (climate->fan_mode != climate::CLIMATE_FAN_HIGH) {
+              call.set_fan_mode(climate::CLIMATE_FAN_HIGH);
+              call.perform();
+              ESP_LOGI("fan_tuner", "Kamer is koud (Verschil: %.1f°C). Ventilator naar HIGH.", temp_verschil);
+            }
+          } 
+          else if (temp_verschil <= 0.8) {
+            // Doeltemperatuur is bijna bereikt: Schakel naar Quiet voor stilte
+            if (climate->fan_mode != climate::CLIMATE_FAN_QUIET) {
+              call.set_fan_mode(climate::CLIMATE_FAN_QUIET);
+              call.perform();
+              ESP_LOGI("fan_tuner", "Doel bijna bereikt (Verschil: %.1f°C). Ventilator naar QUIET.", temp_verschil);
+            }
+          }
+          else {
+            // Er tussenin (tussen 0.8°C en 2.0°C): Zet de ventilator op Medium/Middle
+            if (climate->fan_mode != climate::CLIMATE_FAN_MIDDLE && climate->fan_mode != climate::CLIMATE_FAN_MEDIUM) {
+              // We proberen MEDIUM te zetten, afhankelijk van welke fan-modes de Duepi package blootlegt
+              call.set_fan_mode(climate::CLIMATE_FAN_MEDIUM);
+              call.perform();
+              ESP_LOGI("fan_tuner", "Kamer warmt op (Verschil: %.1f°C). Ventilator naar MEDIUM.", temp_verschil);
+            }
+          }
