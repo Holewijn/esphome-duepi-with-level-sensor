@@ -1,0 +1,39 @@
+# GitHub: components/level_sensor_calibration.yaml
+
+# Invoervelden die automatisch in Home Assistant verschijnen en permanent op de ESP32 worden opgeslagen
+number:
+  - platform: template
+    name: "Pelletbunker: Afstand LEEG"
+    id: kalibratie_leeg
+    icon: "mdi:arrow-down-bold"
+    unit_of_measurement: "m"
+    min_value: 0.10
+    max_value: 1.00
+    step: 0.01
+    initial_value: 0.45 # Standaardwaarde (45cm) als startpunt
+    restore_value: yes   # Onthoudt deze waarde permanent op de ESP32!
+    optimistic: true
+
+  - platform: template
+    name: "Pelletbunker: Afstand VOL"
+    id: kalibratie_vol
+    icon: "mdi:arrow-up-bold"
+    unit_of_measurement: "m"
+    min_value: 0.02
+    max_value: 0.50
+    step: 0.01
+    initial_value: 0.10 # Standaardwaarde (10cm) als startpunt
+    restore_value: yes   # Onthoudt deze waarde permanent op de ESP32!
+    optimistic: true
+
+# Extra bonus sensor om de RUWE afstand in meters live in HA te zien tijdens het afstellen
+sensor:
+  - platform: template
+    name: "Pelletbunker: Ruwe Afstand"
+    id: ruwe_afstand_meters
+    unit_of_measurement: "m"
+    accuracy_decimals: 2
+    icon: "mdi:ruler"
+    update_interval: 10s
+    lambda: |-
+      return id(ruwe_afstand_sensor_intern).state;
