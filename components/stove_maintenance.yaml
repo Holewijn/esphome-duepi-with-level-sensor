@@ -23,13 +23,13 @@ time:
           if:
             condition:
               and:
-                # GECORRIGEERD: Juiste syntax voor een switch condition
-                - condition: switch.is_on
-                  id: onderhoud_schakelaar
-                # GECORRIGEERD: De dubbele punt achter in_numeric_range is hier verwijderd!
-                - condition: sensor.in_numeric_range
-                  id: pellet_verbruik
-                  below: -0.5
+                - switch.is_on:
+                    id: onderhoud_schakelaar
+
+                - sensor.in_range:
+                    id: pellet_verbruik
+                    below: -0.5
+
             then:
               - lambda: |-
                   id(branduren_teller) += (1.0 / 60.0);
