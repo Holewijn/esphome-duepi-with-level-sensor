@@ -1,5 +1,6 @@
-# GitHub: components/binary_sensor.yaml
 binary_sensor:
-  - platform: duepi
-    puffer_sol_state:
-      name: "Pelletkachel Puffer Status"
+  - platform: template
+    name: "Official app connected"
+    id: expert_tcp_bridge_connected_bs
+    device_class: connectivity
+    entity_category: diagnostic
