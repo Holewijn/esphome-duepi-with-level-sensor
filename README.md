@@ -40,13 +40,35 @@ Because we are using an ESP32, the UART communication to the stove is moved to h
 
 ## 🚀 Getting Started & Calibration
 
+## 🚀 Getting Started, Calibration & External Temperature Sensor
+
+### 1. General Setup & Wi-Fi
 1. Clone or copy the `pelletstove.yaml` configuration into your ESPHome dashboard.
 2. Change the Wi-Fi credentials to match your home network.
 3. Install/Flash the code onto your ESP32.
-4. Open the ESPHome nodes **Logs** to calibrate the pellet hopper depth:
-   * **Empty Hopper:** Look at the distance measured when empty (e.g., `0.45 m`). Update `- 0.45 -> 0` in your YAML config.
-   * **Full Hopper:** Look at the distance measured when full (e.g., `0.10 m`). Update `- 0.10 -> 100` in your YAML config.
-5. Re-flash the ESP32 to apply your exact calibration.
+
+### 2. Level Sensor Calibration
+Open the ESPHome node's **Logs** to calibrate the pellet hopper depth:
+* **Empty Hopper:** Look at the distance measured when empty (e.g., `0.45 m`). Update `- 0.45 -> 0` in your `pelletstove.yaml` config.
+* **Full Hopper:** Look at the distance measured when full (e.g., `0.10 m`). Update `- 0.10 -> 100` in your `pelletstove.yaml` config.
+* Re-flash the ESP32 to apply your exact calibration.
+
+### 3. Smart External Temperature Sensor (with Automatic Failover) 🌡️🛡️
+By default, this configuration can use a wireless room temperature sensor from Home Assistant (e.g., Zigbee, BLE, or Wi-Fi) to control the stove's climate thermostat instead of the hot sensor behind the stove. 
+
+To keep your configuration completely **update-proof**, you can change this setting at the very top of your `pelletstove.yaml` file under the `substitutions:` block:
+
+```yaml
+substitutions:
+  # Replace with the exact entity ID of your external Home Assistant sensor:
+  externe_ha_temperatuursensor: "sensor.woonkamer_temperatuur"
+```
+
+#### How the Automatic Backup works:
+* **Normal Operation:** The ESP32 reads the live state of your external room sensor. The pellet stove will modulate perfectly based on the temperature where you placed your room sensor.
+* **Emergency Failover:** If your Wi-Fi drops, Home Assistant crashes, or the external sensor's battery dies, the ESP32 will instantly detect the missing data (`NAN`). Within 10 seconds, it will gracefully switch back to the stove's internal ambient temperature sensor. Your house stays safe and warm, and the stove will never run wild!
+* **Status Monitoring:** You can monitor which sensor is currently driving your stove via the auto-generated `sensor.actieve_temperatuurbron` entity in Home Assistant.
+
 
 ---
 
