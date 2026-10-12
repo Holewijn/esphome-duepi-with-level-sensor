@@ -13,6 +13,7 @@ packages:
   pellet_brandtijd: !include level_sensor_time.yaml
   kachel_onderhoud: !include stove_maintenance.yaml
   pellet_teller: !include pellet_counter.yaml
+  slimme_ventilator: !include fan_tuner.yaml
 # Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
 external_components:
   - source:
