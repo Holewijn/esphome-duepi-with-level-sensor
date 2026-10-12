@@ -1,0 +1,51 @@
+# GitHub: components/pellet_efficiency.yaml
+
+sensor:
+  # Rekenmodule die het procentuele verbruik omzet naar daadwerkelijke kilo's per uur
+  - platform: template
+    name: "Actueel Pelletverbruik (Gewicht)"
+    id: actueel_verbruik_kgh
+    unit_of_measurement: "kg/h"
+    accuracy_decimals: 2
+    icon: "mdi:fire-trend"
+    update_interval: 30s
+    lambda: |-
+      // Haal de procentuele daling per uur op (is negatief bij daling, bijv. -4.2 %/h)
+      float procent_per_uur = id(pellet_verbruik).state;
+      
+      // Controleer op geldige waarden
+      if (std::isnan(procent_per_uur)) {
+        return {};
+      }
+
+      // Als de kachel uitstaat of het niveau stijgt (vullen), is het verbruik 0
+      if (procent_per_uur >= -0.1) {
+        return 0.0;
+      }
+
+      // Maak het getal positief voor de berekening
+      float daling_positief = std::abs(procent_per_uur);
+
+      // AANNAME: Een daling van 1% staat gelijk aan 0.15 kg pellets (op basis van een 15kg bunker)
+      // We vermenigvuldigen de procentuele daling met de kg-waarde per procent
+      float actuele_kilos_per_uur = daling_positief * 0.15;
+
+      return actuele_kilos_per_uur;
+
+  # Extra bonus-sensor: Zet het verbruik om naar grammen per minuut (leuk voor live grafieken!)
+  - platform: template
+    name: "Actueel Pelletverbruik (Gram/Min)"
+    id: actueel_verbruik_gmin
+    unit_of_measurement: "g/min"
+    accuracy_decimals: 0
+    icon: "mdi:speedometer"
+    update_interval: 30s
+    lambda: |-
+      float kilos_per_uur = id(actueel_verbruik_kgh).state;
+      
+      if (std::isnan(kilos_per_uur) || kilos_per_uur <= 0.0) {
+        return 0.0;
+      }
+
+      // Berekening: (kg * 1000) / 60 minuten
+      return (kilos_per_uur * 1000.0) / 60.0;
