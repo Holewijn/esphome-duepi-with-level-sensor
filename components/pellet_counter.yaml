@@ -6,7 +6,6 @@ switch:
     id: teller_schakelaar
     icon: "mdi:counter"
     optimistic: true
-    initial_state: true
 
 globals:
   # Slaat het totaal aantal verbruikte kilo's permanent op in het flashgeheugen
