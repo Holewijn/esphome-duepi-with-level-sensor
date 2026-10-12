@@ -1,5 +1,13 @@
 # GitHub: components/pellet_counter.yaml
 
+switch:
+  - platform: template
+    name: "Module: Pellet Kilometerteller"
+    id: teller_schakelaar
+    icon: "mdi:counter"
+    optimistic: true
+    initial_state: true
+
 globals:
   # Slaat het totaal aantal verbruikte kilo's permanent op in het flashgeheugen
   - id: totaal_kilos_verbruikt
