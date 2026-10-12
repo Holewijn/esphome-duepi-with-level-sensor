@@ -24,9 +24,9 @@ time:
           if:
             condition:
               and:
-                # 1. De timer telt ALLEEN op als de master switch in HA aan staat
-                - condition: switch.is_on: onderhoud_schakelaar
-                # 2. En als de kachel ook daadwerkelijk pellets aan het verbruiken is
+                # GECORRIGEERD: Juiste syntax voor een switch condition in ESPHome
+                - condition: switch.is_on
+                  id: onderhoud_schakelaar
                 - condition: sensor.in_numeric_range:
                     id: pellet_verbruik
                     below: -0.5
@@ -53,11 +53,9 @@ template:
         device_class: problem
         icon: "mdi:ash"
         lambda: |-
-          // Als de module is uitgeschakeld via de switch, negeer de foutmelding altijd
           if (!id(onderhoud_schakelaar).state) {
             return false;
           }
-          // Geeft een melding (ON) als de kachel meer dan 20 uur heeft gebrand
           if (id(branduren_teller) >= 20.0) {
             return true; 
           } else {
