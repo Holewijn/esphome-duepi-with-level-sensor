@@ -1,5 +1,13 @@
 # GitHub: components/level_sensor_time.yaml
 
+switch:
+  - platform: template
+    name: "Module: Brandtijd Berekening"
+    id: brandtijd_schakelaar
+    icon: "mdi:clock-check"
+    optimistic: true
+    initial_state: true
+
 sensor:
   - platform: derivative
     name: "Pellet Verbruikssnelheid"
