@@ -4,7 +4,7 @@ esphome:
   min_version: 2026.9.1
 
 dashboard_import:
-  package_url: github://Holewijn/esphome-duepi-with-level-sensor/pelletstove.yaml@main
+  package_import_url: github://Holewijn/esphome-duepi-with-level-sensor/pelletstove.yaml@main
 
 
 esp32:
