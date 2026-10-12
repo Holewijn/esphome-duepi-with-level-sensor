@@ -12,6 +12,7 @@ packages:
   duepi_binary: !include binary_sensor.yaml
   pellet_brandtijd: !include level_sensor_time.yaml
   kachel_onderhoud: !include stove_maintenance.yaml
+  pellet_teller: !include pellet_counter.yaml
 # Zorgt ervoor dat ESPHome de 'duepi' C++ map vanuit de hoofdmap van je project start
 external_components:
   - source:
