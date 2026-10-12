@@ -23,9 +23,13 @@ time:
         then:
           if:
             condition:
-              sensor.in_numeric_range:
-                id: pellet_verbruik
-                below: -0.5
+              and:
+                # 1. De timer telt ALLEEN op als de master switch in HA aan staat
+                - condition: switch.is_on: onderhoud_schakelaar
+                # 2. En als de kachel ook daadwerkelijk pellets aan het verbruiken is
+                - condition: sensor.in_numeric_range:
+                    id: pellet_verbruik
+                    below: -0.5
             then:
               - lambda: |-
                   id(branduren_teller) += (1.0 / 60.0);
@@ -49,6 +53,11 @@ template:
         device_class: problem
         icon: "mdi:ash"
         lambda: |-
+          // Als de module is uitgeschakeld via de switch, negeer de foutmelding altijd
+          if (!id(onderhoud_schakelaar).state) {
+            return false;
+          }
+          // Geeft een melding (ON) als de kachel meer dan 20 uur heeft gebrand
           if (id(branduren_teller) >= 20.0) {
             return true; 
           } else {
