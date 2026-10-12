@@ -6,7 +6,6 @@ switch:
     id: brandtijd_schakelaar
     icon: "mdi:clock-check"
     optimistic: true
-    initial_state: true
 
 sensor:
   - platform: template
