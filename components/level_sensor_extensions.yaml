@@ -1,0 +1,39 @@
+# GitHub: components/level_sensor_extensions.yaml
+
+# Meet de daling van het percentage per uur
+sensor:
+  - platform: derivative
+    name: "Pellet Verbruikssnelheid"
+    id: pellet_verbruik
+    sensor: pellet_niveau
+    unit_of_measurement: "%/h"
+    accuracy_decimals: 1
+    time_window: 30min 
+    icon: "mdi:gauge"
+
+# Berekent intern op de ESP32 de resterende tijd tot de bunker leeg is
+text_sensor:
+  - platform: template
+    name: "Resterende Brandtijd"
+    id: resterende_brandtijd
+    icon: "mdi:clock-end"
+    update_interval: 60s
+    lambda: |-
+      float niveau = id(pellet_niveau).state;
+      float verbruik = id(pellet_verbruik).state;
+
+      if (std::isnan(niveau) || std::isnan(verbruik)) {
+        return {"Berekenen..."};
+      }
+
+      if (verbruik >= -0.5) {
+        return {"Kachel staat uit"};
+      }
+
+      float uren_totaal = niveau / (std::abs(verbruik));
+      int uren = (int)uren_totaal;
+      int minuten = (int)((uren_totaal - uren) * 60);
+
+      char buffer[32];
+      sprintf(buffer, "%du %dm", uren, minuten);
+      return {buffer};
