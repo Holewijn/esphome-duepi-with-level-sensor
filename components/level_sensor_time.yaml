@@ -90,12 +90,7 @@ text_sensor:
       int hele_uren = int(uren_resterend);
       int minuten = int((uren_resterend - hele_uren) * 60);
 
-      // Formatteer de tijd netjes naar 'Xu Xm'
-      char buffer[32];
-      sprintf(buffer, "%du %dm", hele_uren, minuten);
-      return {buffer};
-
-
+      // Sla de tekst netjes op in een eenmalige buffer van 32 tekens
       char buffer[32];
       sprintf(buffer, "%du %dm", hele_uren, minuten);
       return {buffer};
