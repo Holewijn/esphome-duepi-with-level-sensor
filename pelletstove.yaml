@@ -64,17 +64,31 @@ packages:
 # Fysieke Basis Niveausensor & Dynamische HA Kalibratie
 # ========================================================
 sensor:
-  # De fysieke sensor leest de afstand en slaat deze intern op
+  # De fysieke sensor leest de afstand en slaat deze intern op in METERS
   - platform: ultrasonic
     trigger_pin: GPIO23  
     echo_pin: GPIO22     
     id: ruwe_afstand_sensor_intern
     internal: true
-    update_interval: 60s 
+    update_interval: 10s
+    # Vertel de sensor dat je bunker nooit dieper is dan 1 meter (stopt de 19m time-out direct)
+    timeout: 1.0m 
     filters:
-      - filter_out: NAN
+      # 1. Neem het gemiddelde van 5 metingen tegen de ruis
       - median:
           window_size: 5
+          send_every: 5
+          send_first_at: 1
+      # 2. Gooi foutieve metingen (NAN) direct weg
+      - filter_out: NAN
+      # 3. C++ Code: Als de meting boven de 0.80 meter komt, is het de bekende 19-meter fout. 
+      # We weigeren deze waarde (return {}) zodat je kachel niet naar 0% schiet.
+      - lambda: |-
+          if (x > 0.80) {
+            return {}; 
+          } else {
+            return x;
+          }
 
   # Het uiteindelijke percentage berekent de ESP32 live op basis van je HA schuifbalken
   - platform: template
