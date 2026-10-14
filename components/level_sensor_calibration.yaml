@@ -5,24 +5,24 @@ number:
   - platform: template
     name: "Pelletbunker: Afstand LEEG"
     id: kalibratie_leeg
-    icon: "mdi:arrow-down-bold"
+    icon: "mdi:arrow-collapse-down"
     unit_of_measurement: "m"
     min_value: 0.10
     max_value: 1.00
     step: 0.01
-    initial_value: 0.45 # Standaardwaarde (45cm) als startpunt
+    initial_value: 0.44 # Standaardwaarde (44cm) als startpunt
     restore_value: yes   # Onthoudt deze waarde permanent op de ESP32!
     optimistic: true
 
   - platform: template
     name: "Pelletbunker: Afstand VOL"
     id: kalibratie_vol
-    icon: "mdi:arrow-up-bold"
+    icon: "mdi:arrow-collapse-up"
     unit_of_measurement: "m"
     min_value: 0.02
     max_value: 0.50
     step: 0.01
-    initial_value: 0.10 # Standaardwaarde (10cm) als startpunt
+    initial_value: 0.06 # Standaardwaarde (6cm) als startpunt
     restore_value: yes   # Onthoudt deze waarde permanent op de ESP32!
     optimistic: true
 
