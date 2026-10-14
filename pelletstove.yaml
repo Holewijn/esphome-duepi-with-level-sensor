@@ -59,6 +59,7 @@ packages:
     url: https://github.com/Holewijn/esphome-duepi-with-level-sensor
     ref: main
     files: [pelletstove.yaml]
+    refresh: always
 
 # ========================================================
 # Fysieke Basis Niveausensor & Dynamische HA Kalibratie
