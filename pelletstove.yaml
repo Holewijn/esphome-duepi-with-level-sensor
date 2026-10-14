@@ -55,10 +55,10 @@ substitutions:
 # Live modulaire pakketten inladen uit je EIGEN GitHub repo
 # ========================================================
 packages:
-  duepi:
-    url: https://github.com/Holewijn/esphome-duepi-with-level-sensor.git
-    file: components/packages.yaml
+  duepi_pelletkachel:
+    url: https://github.com/Holewijn/esphome-duepi-with-level-sensor
     ref: main
+    files: [pelletstove.yaml]
 
 # ========================================================
 # Fysieke Basis Niveausensor & Dynamische HA Kalibratie
