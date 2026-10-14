@@ -58,7 +58,8 @@ packages:
   duepi_pelletkachel:
     url: https://github.com/Holewijn/esphome-duepi-with-level-sensor
     ref: main
-    files: [pelletstove.yaml]
+    # We roepen nu het centrale pakketbestand aan die de rest automatisch inlaadt!
+    files: [components/packages.yaml] 
     refresh: always
 
 # ========================================================
