@@ -56,23 +56,40 @@ text_sensor:
     name: "Resterende Brandtijd"
     id: resterende_brandtijd
     icon: "mdi:clock-end"
-    update_interval: 60s
+    update_interval: 30s
     lambda: |-
-      float niveau = id(pellet_niveau).state;
-      float verbruik = id(pellet_verbruik).state;
-
-      if (std::isnan(niveau) || std::isnan(verbruik)) {
-        return {"Berekenen..."};
-      }
-
-      if (verbruik >= -0.5) {
+      // 1. Haal de echte branderstatus van de kachel op
+      std::string status = id(pelletkachel_burner_status).state;
+      
+      // 2. Als de kachel volgens het moederbord écht uitstaat, toon dat dan pas
+      if (status == "Stove Off" || status == "Off" || status == "Uit") {
         return {"Kachel staat uit"};
       }
 
-      float uren_totaal = niveau / (std::abs(verbruik));
-      int uren = (int)uren_totaal;
-      int minuten = (int)((uren_totaal - uren) * 60);
+      // 3. Haal de verbruikssnelheid op
+      float verbruik = id(pellet_verbruik).state; // Dit is bijv. -4.2 %/h
+      float niveau = id(pellet_niveau_sensor_id).state; // Huidige % bunker
+
+      if (std::isnan(verbruik) || std::isnan(niveau)) {
+        return {"Berekenen..."};
+      }
+
+      // 4. Als de kachel aanstaat maar de sensor meet héél even geen daling, 
+      // toon dan de laatste bekende tijd in plaats van "Kachel staat uit"
+      if (verbruik >= -0.01) {
+        if (id(resterende_brandtijd).state != "Kachel staat uit") {
+          return id(resterende_brandtijd).state; // Behoud de oude tijd tot de volgende stabiele meting
+        }
+        return {"Berekenen..."};
+      }
+
+      // Pas hier je normale rekenformule toe voor uren en minuten...
+      float daling_positief = std::abs(verbruik);
+      float uren_resterend = niveau / daling_positief;
+      
+      int hele_uren = int(uren_resterend);
+      int minuten = int((uren_resterend - hele_uren) * 60);
 
       char buffer[32];
-      sprintf(buffer, "%du %dm", uren, minuten);
+      sprintf(buffer, "%du %dm", hele_uren, minuten);
       return {buffer};
