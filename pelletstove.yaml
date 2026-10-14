@@ -92,7 +92,7 @@ sensor:
 
   # Het uiteindelijke percentage berekent de ESP32 live op basis van je HA schuifbalken
   - platform: template
-    name: "Pelletvoorraad Niveau"
+    name: "Pelletvoorraad Gekalibreerd"
     id: pellet_niveau
     icon: "mdi:heater"
     unit_of_measurement: "%"
