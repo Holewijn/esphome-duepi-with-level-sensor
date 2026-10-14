@@ -58,37 +58,43 @@ text_sensor:
     icon: "mdi:clock-end"
     update_interval: 30s
     lambda: |-
-      // 1. Haal de echte branderstatus van de kachel op
-      std::string status = id(pelletkachel_burner_status).state;
+      // 1. Haal de echte branderstatus op met de juiste ID 'burner_status'
+      std::string status = id(burner_status).state;
       
-      // 2. Als de kachel volgens het moederbord écht uitstaat, toon dat dan pas
-      if (status == "Stove Off" || status == "Off" || status == "Uit") {
+      // 2. Als de kachel uitstaat, toon dat dan direct
+      if (status == "Off" || status == "Stove Off" || status == "Uit") {
         return {"Kachel staat uit"};
       }
 
-      // 3. Haal de verbruikssnelheid op
-      float verbruik = id(pellet_verbruik).state; // Dit is bijv. -4.2 %/h
-      float niveau = id(pellet_niveau_sensor_id).state; // Huidige % bunker
+      // 3. Haal de verbruikssnelheid en het huidige procentuele niveau op met 'pellet_niveau'
+      float verbruik = id(pellet_verbruik).state; 
+      float niveau = id(pellet_niveau).state; 
 
       if (std::isnan(verbruik) || std::isnan(niveau)) {
         return {"Berekenen..."};
       }
 
-      // 4. Als de kachel aanstaat maar de sensor meet héél even geen daling, 
-      // toon dan de laatste bekende tijd in plaats van "Kachel staat uit"
+      // 4. Als de kachel aanstaat maar de ultrasone sensor meet heel even geen daling,
+      // behoud dan de laatst berekende tijd in plaats van naar 'Kachel staat uit' te springen
       if (verbruik >= -0.01) {
-        if (id(resterende_brandtijd).state != "Kachel staat uit") {
-          return id(resterende_brandtijd).state; // Behoud de oude tijd tot de volgende stabiele meting
+        if (id(resterende_brandtijd).state != "Kachel staat uit" && id(resterende_brandtijd).state != "") {
+          return id(resterende_brandtijd).state; 
         }
         return {"Berekenen..."};
       }
 
-      // Pas hier je normale rekenformule toe voor uren en minuten...
+      // 5. Bereken de resterende brandtijd op basis van de actuele daling
       float daling_positief = std::abs(verbruik);
       float uren_resterend = niveau / daling_positief;
       
       int hele_uren = int(uren_resterend);
       int minuten = int((uren_resterend - hele_uren) * 60);
+
+      // Formatteer de tijd netjes naar 'Xu Xm'
+      char buffer[32];
+      sprintf(buffer, "%du %dm", hele_uren, minuten);
+      return {buffer};
+
 
       char buffer[32];
       sprintf(buffer, "%du %dm", hele_uren, minuten);
