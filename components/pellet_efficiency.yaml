@@ -17,25 +17,28 @@ sensor:
     icon: "mdi:fire-trend"
     update_interval: 30s
     lambda: |-
-      // Haal de procentuele daling per uur op (is negatief bij daling, bijv. -4.2 %/h)
       float procent_per_uur = id(pellet_verbruik).state;
       
-      // Controleer op geldige waarden
       if (std::isnan(procent_per_uur)) {
         return {};
       }
 
       // Als de kachel uitstaat of het niveau stijgt (vullen), is het verbruik 0
-      if (procent_per_uur >= -0.1) {
+      if (procent_per_uur >= -0.05) {
         return 0.0;
       }
 
-      // Maak het getal positief voor de berekening
       float daling_positief = std::abs(procent_per_uur);
 
-      // AANNAME: Een daling van 1% staat gelijk aan 0.15 kg pellets (op basis van een 15kg bunker)
-      // We vermenigvuldigen de procentuele daling met de kg-waarde per procent
-      float actuele_kilos_per_uur = daling_positief * 0.15;
+      // FACTOREN OP BASIS VAN ARTEL CURVA NEXT 8KW:
+      // De tank is 13 kg. 1% daling is dus exact 0.13 kg pellets (13 / 100).
+      float actuele_kilos_per_uur = daling_positief * 0.13;
+
+      // VEILIGHEIDS-CHECK: Begrens de AI-waarde aan de hand van je fabrieksspecificaties (0.6 - 1.4 kg/h)
+      // We bouwen een kleine marge in (max 1.6 kg/h voor opstarten/aansteken)
+      if (actuele_kilos_per_uur > 1.6) {
+        return 1.4; // Maximaal fabrieksverbruik bij uitschieters
+      }
 
       return actuele_kilos_per_uur;
 
