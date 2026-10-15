@@ -1,5 +1,26 @@
 text_sensor:
   - platform: template
+    name: "Kachel Storing Status"
+    id: kachel_storing_status
+    icon: "mdi:alert-circle"
+    lambda: |-
+      int error_num = int(id(pelletkachel_error_code).state);
+      switch(error_num) {
+        case 0:  return {"Veilig - Geen storing"};
+        case 1:  return {"Er01 - Beveiliging Thermostaat (Oververhitting)"};
+        case 2:  return {"Er02 - Drukregelaar / Pressure Switch Fout (Geen trek)"};
+        case 3:  return {"Er03 - Kachel dooft / Pellets leeg"};
+        case 4:  return {"Er04 - Mislukte ontsteking (Kachel start niet op)"};
+        case 5:  return {"Er05 - Pellettoevoer blokkering of Vijzel defect"};
+        case 6:  return {"Er06 - Rookgasventilator encoder fout (Toerental klopt niet)"};
+        case 7:  return {"Er07 - Communicatiefout tussen display en moederbord"};
+        case 8:  return {"Er08 - Algemene elektronische storing (Moederbord)"};
+        case 11: return {"Er11 - Interne klok / Batterij leeg"};
+        case 12: return {"Er12 - Rookgassensor defect of losgekoppeld"};
+        case 15: return {"Er15 - Voedingsspanning weggevallen (Stroomstoring)"};
+        default: return {"Onbekende foutcode: " + std::to_string(error_num)};
+      }
+  - platform: template
     name: "burner status"
     id: "burner_status"
     update_interval: 10s
