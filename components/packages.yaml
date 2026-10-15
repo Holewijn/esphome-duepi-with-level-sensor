@@ -19,3 +19,4 @@ packages:
   pellet_efficiency: !include pellet_efficiency.yaml
   temperature_failover: !include temperature_failover.yaml
   level_sensor_calibration: !include level_sensor_calibration.yaml
+  installer_parameters: !include installer_parameters.yaml
