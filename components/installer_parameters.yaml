@@ -1,3 +1,14 @@
+# In components/installer_parameters.yaml
+
+switch:
+  - platform: template
+    name: "Activeer Installer Mode"
+    id: installer_mode
+    icon: "mdi:shield-lock-open"
+    optimistic: true
+    initial_state: false
+    restore_mode: ALWAYS_OFF # Zorgt ervoor dat de modus na stroomuitval altijd veilig UIT staat
+
 number:
   # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING (Register 0x01)
   - platform: template
@@ -11,7 +22,11 @@ number:
     optimistic: true
     set_action:
       - lambda: |-
-          // Schrijf de bytes direct als een C++ array via de uart_bus
+          // VEILIGHEIDSCHECK: Als de installer modus uitstaat, negeer de wijziging direct!
+          if (!id(installer_mode).state) {
+            ESP_LOGW("duepi_installer", "Wijziging geweigerd: Installer Mode staat UIT!");
+            return;
+          }
           uint8_t data[2] = {0x01, (uint8_t)(x * 10.0)};
           id(uart_bus).write_array(data, 2);
       - logger.log:
@@ -30,6 +45,7 @@ number:
     optimistic: true
     set_action:
       - lambda: |-
+          if (!id(installer_mode).state) return;
           uint8_t data[2] = {0x02, (uint8_t)(x * 10.0)};
           id(uart_bus).write_array(data, 2);
       - logger.log:
@@ -48,6 +64,7 @@ number:
     optimistic: true
     set_action:
       - lambda: |-
+          if (!id(installer_mode).state) return;
           uint8_t data[2] = {0x06, (uint8_t)(x * 10.0)};
           id(uart_bus).write_array(data, 2);
       - logger.log:
@@ -66,6 +83,7 @@ number:
     optimistic: true
     set_action:
       - lambda: |-
+          if (!id(installer_mode).state) return;
           uint8_t data[2] = {0x12, (uint8_t)(x / 10.0)};
           id(uart_bus).write_array(data, 2);
       - logger.log:
@@ -84,6 +102,7 @@ number:
     optimistic: true
     set_action:
       - lambda: |-
+          if (!id(installer_mode).state) return;
           uint8_t data[2] = {0x16, (uint8_t)(x / 10.0)};
           id(uart_bus).write_array(data, 2);
       - logger.log:
@@ -105,6 +124,7 @@ select:
     optimistic: true
     set_action:
       - lambda: |-
+          if (!id(installer_mode).state) return;
           uint8_t val = 30;
           if (x == "20 min") val = 20;
           else if (x == "30 min") val = 30;
