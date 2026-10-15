@@ -10,9 +10,10 @@ number:
     step: 0.1
     optimistic: true
     set_action:
-      - uart.write:
-          id: uart_bus
-          data: [0x01, !lambda "return (uint8_t)(x * 10.0);"]
+      - lambda: |-
+          // Schrijf de bytes direct als een C++ array via de uart_bus
+          uint8_t data[2] = {0x01, (uint8_t)(x * 10.0)};
+          id(uart_bus).write_array(data, 2);
       - logger.log:
           format: "Installer: Vijzel Ontsteking bijgesteld naar: %.1f s"
           args: [ 'x' ]
@@ -28,9 +29,9 @@ number:
     step: 0.1
     optimistic: true
     set_action:
-      - uart.write:
-          id: uart_bus
-          data: [0x02, !lambda "return (uint8_t)(x * 10.0);"]
+      - lambda: |-
+          uint8_t data[2] = {0x02, (uint8_t)(x * 10.0)};
+          id(uart_bus).write_array(data, 2);
       - logger.log:
           format: "Installer: Vijzel Power 1 bijgesteld naar: %.1f s"
           args: [ 'x' ]
@@ -46,9 +47,9 @@ number:
     step: 0.1
     optimistic: true
     set_action:
-      - uart.write:
-          id: uart_bus
-          data: [0x06, !lambda "return (uint8_t)(x * 10.0);"]
+      - lambda: |-
+          uint8_t data[2] = {0x06, (uint8_t)(x * 10.0)};
+          id(uart_bus).write_array(data, 2);
       - logger.log:
           format: "Installer: Vijzel Power 5 bijgesteld naar: %.1f s"
           args: [ 'x' ]
@@ -64,9 +65,9 @@ number:
     step: 50
     optimistic: true
     set_action:
-      - uart.write:
-          id: uart_bus
-          data: [0x12, !lambda "return (uint8_t)(x / 10.0);"]
+      - lambda: |-
+          uint8_t data[2] = {0x12, (uint8_t)(x / 10.0)};
+          id(uart_bus).write_array(data, 2);
       - logger.log:
           format: "Installer: Rookgasfan Power 1 bijgesteld naar: %.0f RPM"
           args: [ 'x' ]
@@ -82,9 +83,9 @@ number:
     step: 50
     optimistic: true
     set_action:
-      - uart.write:
-          id: uart_bus
-          data: [0x16, !lambda "return (uint8_t)(x / 10.0);"]
+      - lambda: |-
+          uint8_t data[2] = {0x16, (uint8_t)(x / 10.0)};
+          id(uart_bus).write_array(data, 2);
       - logger.log:
           format: "Installer: Rookgasfan Power 5 bijgesteld naar: %.0f RPM"
           args: [ 'x' ]
@@ -103,17 +104,16 @@ select:
       - "90 min"
     optimistic: true
     set_action:
-      - uart.write:
-          id: uart_bus
-          data: 
-            - 0x20
-            - !lambda |-
-              if (x == "20 min") return 20;
-              if (x == "30 min") return 30;
-              if (x == "45 min") return 45;
-              if (x == "60 min") return 60;
-              if (x == "90 min") return 90;
-              return 30;
+      - lambda: |-
+          uint8_t val = 30;
+          if (x == "20 min") val = 20;
+          else if (x == "30 min") val = 30;
+          else if (x == "45 min") val = 45;
+          else if (x == "60 min") val = 60;
+          else if (x == "90 min") val = 90;
+          
+          uint8_t data[2] = {0x20, val};
+          id(uart_bus).write_array(data, 2);
       - logger.log:
           format: "Installer: Reinigingsinterval bijgesteld naar: %s"
           args: [ 'x.c_str()' ]
