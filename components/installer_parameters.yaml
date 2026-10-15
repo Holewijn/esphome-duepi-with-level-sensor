@@ -11,9 +11,8 @@ number:
     optimistic: true
     set_action:
       lambda: |-
-        // Schrijf de geselecteerde seconden (x) direct naar Duepi Register 1
-        // We vermenigvuldigen met 10 omdat Duepi rekent in tienden van seconden (bijv. 2.5s = 25)
-        id(duepi_stove).write_parameter(0x01, (uint8_t)(x * 10.0));
+        // AANGEPAST NAAR id(duepi)
+        id(duepi).write_parameter(0x01, (uint8_t)(x * 10.0));
         ESP_LOGD("duepi_installer", "Vijzel Ontsteking bijgesteld naar: %.1f s", x);
 
   # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN / POWER 1 (Register 0x02)
@@ -28,7 +27,7 @@ number:
     optimistic: true
     set_action:
       lambda: |-
-        id(duepi_stove).write_parameter(0x02, (uint8_t)(x * 10.0));
+        id(duepi).write_parameter(0x02, (uint8_t)(x * 10.0));
         ESP_LOGD("duepi_installer", "Vijzel Power 1 bijgesteld naar: %.1f s", x);
 
   # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x06)
@@ -43,7 +42,7 @@ number:
     optimistic: true
     set_action:
       lambda: |-
-        id(duepi_stove).write_parameter(0x06, (uint8_t)(x * 10.0));
+        id(duepi).write_parameter(0x06, (uint8_t)(x * 10.0));
         ESP_LOGD("duepi_installer", "Vijzel Power 5 bijgesteld naar: %.1f s", x);
 
   # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN / POWER 1 (Register 0x12)
@@ -58,9 +57,7 @@ number:
     optimistic: true
     set_action:
       lambda: |-
-        // Duepi rekent toerentallen vaak in stappen van 10 of gebruikt directe waarden.
-        // We delen het RPM door 10 omdat het Duepi-register dit als een factor 10 opslaat (bijv. 1250 RPM = 125)
-        id(duepi_stove).write_parameter(0x12, (uint8_t)(x / 10.0));
+        id(duepi).write_parameter(0x12, (uint8_t)(x / 10.0));
         ESP_LOGD("duepi_installer", "Rookgasfan Power 1 bijgesteld naar: %.0f RPM", x);
 
   # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x16)
@@ -75,7 +72,7 @@ number:
     optimistic: true
     set_action:
       lambda: |-
-        id(duepi_stove).write_parameter(0x16, (uint8_t)(x / 10.0));
+        id(duepi).write_parameter(0x16, (uint8_t)(x / 10.0));
         ESP_LOGD("duepi_installer", "Rookgasfan Power 5 bijgesteld naar: %.0f RPM", x);
 
 select:
@@ -93,12 +90,12 @@ select:
     optimistic: true
     set_action:
       lambda: |-
-        uint8_t value = 30; // Standaard fallback
+        uint8_t value = 30;
         if (x == "20 min") value = 20;
         else if (x == "30 min") value = 30;
         else if (x == "45 min") value = 45;
         else if (x == "60 min") value = 60;
         else if (x == "90 min") value = 90;
         
-        id(duepi_stove).write_parameter(0x20, value);
+        id(duepi).write_parameter(0x20, value);
         ESP_LOGD("duepi_installer", "Reinigingsinterval bijgesteld naar: %s", x.c_str());
