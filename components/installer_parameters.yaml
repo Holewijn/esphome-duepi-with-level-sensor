@@ -10,10 +10,12 @@ number:
     step: 0.1
     optimistic: true
     set_action:
-      lambda: |-
-        // AANGEPAST NAAR id(duepi)
-        id(duepi).write_parameter(0x01, (uint8_t)(x * 10.0));
-        ESP_LOGD("duepi_installer", "Vijzel Ontsteking bijgesteld naar: %.1f s", x);
+      - uart.write:
+          id: uart_bus
+          data: [0x01, !lambda "return (uint8_t)(x * 10.0);"]
+      - logger.log:
+          format: "Installer: Vijzel Ontsteking bijgesteld naar: %.1f s"
+          args: [ 'x' ]
 
   # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN / POWER 1 (Register 0x02)
   - platform: template
@@ -26,9 +28,12 @@ number:
     step: 0.1
     optimistic: true
     set_action:
-      lambda: |-
-        id(duepi).write_parameter(0x02, (uint8_t)(x * 10.0));
-        ESP_LOGD("duepi_installer", "Vijzel Power 1 bijgesteld naar: %.1f s", x);
+      - uart.write:
+          id: uart_bus
+          data: [0x02, !lambda "return (uint8_t)(x * 10.0);"]
+      - logger.log:
+          format: "Installer: Vijzel Power 1 bijgesteld naar: %.1f s"
+          args: [ 'x' ]
 
   # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x06)
   - platform: template
@@ -41,9 +46,12 @@ number:
     step: 0.1
     optimistic: true
     set_action:
-      lambda: |-
-        id(duepi).write_parameter(0x06, (uint8_t)(x * 10.0));
-        ESP_LOGD("duepi_installer", "Vijzel Power 5 bijgesteld naar: %.1f s", x);
+      - uart.write:
+          id: uart_bus
+          data: [0x06, !lambda "return (uint8_t)(x * 10.0);"]
+      - logger.log:
+          format: "Installer: Vijzel Power 5 bijgesteld naar: %.1f s"
+          args: [ 'x' ]
 
   # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN / POWER 1 (Register 0x12)
   - platform: template
@@ -56,9 +64,12 @@ number:
     step: 50
     optimistic: true
     set_action:
-      lambda: |-
-        id(duepi).write_parameter(0x12, (uint8_t)(x / 10.0));
-        ESP_LOGD("duepi_installer", "Rookgasfan Power 1 bijgesteld naar: %.0f RPM", x);
+      - uart.write:
+          id: uart_bus
+          data: [0x12, !lambda "return (uint8_t)(x / 10.0);"]
+      - logger.log:
+          format: "Installer: Rookgasfan Power 1 bijgesteld naar: %.0f RPM"
+          args: [ 'x' ]
 
   # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x16)
   - platform: template
@@ -71,9 +82,12 @@ number:
     step: 50
     optimistic: true
     set_action:
-      lambda: |-
-        id(duepi).write_parameter(0x16, (uint8_t)(x / 10.0));
-        ESP_LOGD("duepi_installer", "Rookgasfan Power 5 bijgesteld naar: %.0f RPM", x);
+      - uart.write:
+          id: uart_bus
+          data: [0x16, !lambda "return (uint8_t)(x / 10.0);"]
+      - logger.log:
+          format: "Installer: Rookgasfan Power 5 bijgesteld naar: %.0f RPM"
+          args: [ 'x' ]
 
 select:
   # PARAMETER: TUSSENTIJDSE REINIGINGSINTERVAL (Register 0x20)
@@ -89,13 +103,17 @@ select:
       - "90 min"
     optimistic: true
     set_action:
-      lambda: |-
-        uint8_t value = 30;
-        if (x == "20 min") value = 20;
-        else if (x == "30 min") value = 30;
-        else if (x == "45 min") value = 45;
-        else if (x == "60 min") value = 60;
-        else if (x == "90 min") value = 90;
-        
-        id(duepi).write_parameter(0x20, value);
-        ESP_LOGD("duepi_installer", "Reinigingsinterval bijgesteld naar: %s", x.c_str());
+      - uart.write:
+          id: uart_bus
+          data: 
+            - 0x20
+            - !lambda |-
+              if (x == "20 min") return 20;
+              if (x == "30 min") return 30;
+              if (x == "45 min") return 45;
+              if (x == "60 min") return 60;
+              if (x == "90 min") return 90;
+              return 30;
+      - logger.log:
+          format: "Installer: Reinigingsinterval bijgesteld naar: %s"
+          args: [ 'x.c_str()' ]
