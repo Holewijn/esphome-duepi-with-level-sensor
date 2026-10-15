@@ -8,7 +8,6 @@ switch:
     optimistic: true
 
 sensor:
-  # Rekenmodule die het procentuele verbruik omzet naar daadwerkelijke kilo's per uur
   - platform: template
     name: "Actueel Pelletverbruik (Gewicht)"
     id: actueel_verbruik_kgh
@@ -17,32 +16,23 @@ sensor:
     icon: "mdi:fire-trend"
     update_interval: 30s
     lambda: |-
-      float procent_per_uur = id(pellet_verbruik).state;
-      
-      if (std::isnan(procent_per_uur)) {
-        return {};
+      // KRIJG ECHTE STATUS VAN DE KACHEL
+      std::string status = id(burner_status).state;
+      if (status == "Off" || status == "Stove Off" || status == "Uit") {
+        return 0.0; // Dwing verbruik naar 0 als de kachel uitstaat!
       }
 
-      // Als de kachel uitstaat of het niveau stijgt (vullen), is het verbruik 0
-      if (procent_per_uur >= -0.05) {
+      float procent_per_uur = id(pellet_verbruik).state;
+      if (std::isnan(procent_per_uur) || procent_per_uur >= -0.05) {
         return 0.0;
       }
 
       float daling_positief = std::abs(procent_per_uur);
-
-      // FACTOREN OP BASIS VAN ARTEL CURVA NEXT 8KW:
-      // De tank is 13 kg. 1% daling is dus exact 0.13 kg pellets (13 / 100).
       float actuele_kilos_per_uur = daling_positief * 0.13;
 
-      // VEILIGHEIDS-CHECK: Begrens de AI-waarde aan de hand van je fabrieksspecificaties (0.6 - 1.4 kg/h)
-      // We bouwen een kleine marge in (max 1.6 kg/h voor opstarten/aansteken)
-      if (actuele_kilos_per_uur > 1.6) {
-        return 1.4; // Maximaal fabrieksverbruik bij uitschieters
-      }
-
+      if (actuele_kilos_per_uur > 1.6) return 1.4;
       return actuele_kilos_per_uur;
 
-  # Extra bonus-sensor: Zet het verbruik om naar grammen per minuut (leuk voor live grafieken!)
   - platform: template
     name: "Actueel Pelletverbruik (Gram per Min)"
     id: actueel_verbruik_gmin
@@ -51,11 +41,14 @@ sensor:
     icon: "mdi:speedometer"
     update_interval: 30s
     lambda: |-
+      // KRIJG ECHTE STATUS VAN DE KACHEL
+      std::string status = id(burner_status).state;
+      if (status == "Off" || status == "Stove Off" || status == "Uit") {
+        return 0.0; // Dwing live verbruik naar 0 als de kachel uitstaat!
+      }
+
       float kilos_per_uur = id(actueel_verbruik_kgh).state;
-      
       if (std::isnan(kilos_per_uur) || kilos_per_uur <= 0.0) {
         return 0.0;
       }
-
-      // Berekening: (kg * 1000) / 60 minuten
       return (kilos_per_uur * 1000.0) / 60.0;
