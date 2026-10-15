@@ -1,7 +1,5 @@
-# In components/installer_parameters.yaml
-
 number:
-  # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING
+  # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING (Register 0x01)
   - platform: template
     name: "Installer: Vijzel Ontsteking Cyclus"
     id: param_vijzel_ontsteking
@@ -11,10 +9,14 @@ number:
     max_value: 8.0
     step: 0.1
     optimistic: true
-    # ESPHome stuurt dit rechtstreeks naar het bijbehorende Duepi register
-    # lambda / set_action logica koppelen aan de UART write-commando's van Duepi
+    set_action:
+      lambda: |-
+        // Schrijf de geselecteerde seconden (x) direct naar Duepi Register 1
+        // We vermenigvuldigen met 10 omdat Duepi rekent in tienden van seconden (bijv. 2.5s = 25)
+        id(duepi_stove).write_parameter(0x01, (uint8_t)(x * 10.0));
+        ESP_LOGD("duepi_installer", "Vijzel Ontsteking bijgesteld naar: %.1f s", x);
 
-  # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN (POWER 1)
+  # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN / POWER 1 (Register 0x02)
   - platform: template
     name: "Installer: Vijzel Toevoer Power 1"
     id: param_vijzel_p1
@@ -24,8 +26,12 @@ number:
     max_value: 4.0
     step: 0.1
     optimistic: true
+    set_action:
+      lambda: |-
+        id(duepi_stove).write_parameter(0x02, (uint8_t)(x * 10.0));
+        ESP_LOGD("duepi_installer", "Vijzel Power 1 bijgesteld naar: %.1f s", x);
 
-  # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN (POWER 5)
+  # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x06)
   - platform: template
     name: "Installer: Vijzel Toevoer Power 5"
     id: param_vijzel_p5
@@ -35,8 +41,12 @@ number:
     max_value: 7.0
     step: 0.1
     optimistic: true
+    set_action:
+      lambda: |-
+        id(duepi_stove).write_parameter(0x06, (uint8_t)(x * 10.0));
+        ESP_LOGD("duepi_installer", "Vijzel Power 5 bijgesteld naar: %.1f s", x);
 
-  # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN (POWER 1)
+  # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN / POWER 1 (Register 0x12)
   - platform: template
     name: "Installer: Rookgasfan Toerental Power 1"
     id: param_fan_p1
@@ -46,8 +56,14 @@ number:
     max_value: 2800
     step: 50
     optimistic: true
+    set_action:
+      lambda: |-
+        // Duepi rekent toerentallen vaak in stappen van 10 of gebruikt directe waarden.
+        // We delen het RPM door 10 omdat het Duepi-register dit als een factor 10 opslaat (bijv. 1250 RPM = 125)
+        id(duepi_stove).write_parameter(0x12, (uint8_t)(x / 10.0));
+        ESP_LOGD("duepi_installer", "Rookgasfan Power 1 bijgesteld naar: %.0f RPM", x);
 
-  # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN (POWER 5)
+  # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x16)
   - platform: template
     name: "Installer: Rookgasfan Toerental Power 5"
     id: param_fan_p5
@@ -57,17 +73,32 @@ number:
     max_value: 3000
     step: 50
     optimistic: true
+    set_action:
+      lambda: |-
+        id(duepi_stove).write_parameter(0x16, (uint8_t)(x / 10.0));
+        ESP_LOGD("duepi_installer", "Rookgasfan Power 5 bijgesteld naar: %.0f RPM", x);
 
 select:
-  # PARAMETER: REINIGINGSCYCLUS INTERVAL
+  # PARAMETER: TUSSENTIJDSE REINIGINGSINTERVAL (Register 0x20)
   - platform: template
     name: "Installer: Tussentijdse Reinigingsinterval"
     id: param_clean_interval
     icon: "mdi:broom"
     options:
-      - "Elke 20 minuten"
-      - "Elke 30 minuten"
-      - "Elke 45 minuten"
-      - "Elke 60 minuten"
-      - "Elke 90 minuten"
+      - "20 min"
+      - "30 min"
+      - "45 min"
+      - "60 min"
+      - "90 min"
     optimistic: true
+    set_action:
+      lambda: |-
+        uint8_t value = 30; // Standaard fallback
+        if (x == "20 min") value = 20;
+        else if (x == "30 min") value = 30;
+        else if (x == "45 min") value = 45;
+        else if (x == "60 min") value = 60;
+        else if (x == "90 min") value = 90;
+        
+        id(duepi_stove).write_parameter(0x20, value);
+        ESP_LOGD("duepi_installer", "Reinigingsinterval bijgesteld naar: %s", x.c_str());
