@@ -1,0 +1,73 @@
+# In components/installer_parameters.yaml
+
+number:
+  # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING
+  - platform: template
+    name: "Installer: Vijzel Ontsteking Cyclus"
+    id: param_vijzel_ontsteking
+    icon: "mdi:screw-lag"
+    unit_of_measurement: "s"
+    min_value: 0.5
+    max_value: 8.0
+    step: 0.1
+    optimistic: true
+    # ESPHome stuurt dit rechtstreeks naar het bijbehorende Duepi register
+    # lambda / set_action logica koppelen aan de UART write-commando's van Duepi
+
+  # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN (POWER 1)
+  - platform: template
+    name: "Installer: Vijzel Toevoer Power 1"
+    id: param_vijzel_p1
+    icon: "mdi:speedometer-slow"
+    unit_of_measurement: "s"
+    min_value: 0.4
+    max_value: 4.0
+    step: 0.1
+    optimistic: true
+
+  # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN (POWER 5)
+  - platform: template
+    name: "Installer: Vijzel Toevoer Power 5"
+    id: param_vijzel_p5
+    icon: "mdi:speedometer"
+    unit_of_measurement: "s"
+    min_value: 1.0
+    max_value: 7.0
+    step: 0.1
+    optimistic: true
+
+  # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN (POWER 1)
+  - platform: template
+    name: "Installer: Rookgasfan Toerental Power 1"
+    id: param_fan_p1
+    icon: "mdi:fan-speed-1"
+    unit_of_measurement: "RPM"
+    min_value: 1000
+    max_value: 2800
+    step: 50
+    optimistic: true
+
+  # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN (POWER 5)
+  - platform: template
+    name: "Installer: Rookgasfan Toerental Power 5"
+    id: param_fan_p5
+    icon: "mdi:fan-speed-3"
+    unit_of_measurement: "RPM"
+    min_value: 1500
+    max_value: 3000
+    step: 50
+    optimistic: true
+
+select:
+  # PARAMETER: REINIGINGSCYCLUS INTERVAL
+  - platform: template
+    name: "Installer: Tussentijdse Reinigingsinterval"
+    id: param_clean_interval
+    icon: "mdi:broom"
+    options:
+      - "Elke 20 minuten"
+      - "Elke 30 minuten"
+      - "Elke 45 minuten"
+      - "Elke 60 minuten"
+      - "Elke 90 minuten"
+    optimistic: true
