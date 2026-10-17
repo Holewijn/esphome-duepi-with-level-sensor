@@ -36,6 +36,8 @@ Omdat we een ESP32 gebruiken, is de UART-communicatie naar de kachel verplaatst 
 | **RX** | **GPIO17 (TX2)** | ESP Transmit ➔ Stove Receive |
 | **TX** | **GPIO16 (RX2)** | Stove Transmit ➔ ESP Receive |
 
+<img width="557" height="508" alt="image" src="https://github.com/user-attachments/assets/0d4dc551-faa8-46c8-a6f7-a0978911c6f3" />
+
 ---
 
 ## 💡 Belangrijkste Functies & Modules
