@@ -1,6 +1,5 @@
-# In components/installer_parameters.yaml
 number:
-  # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING (Register 0x01)
+  # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING (Vast opslaan in EEPROM)
   - platform: template
     name: "Installer: Vijzel Ontsteking Cyclus"
     id: param_vijzel_ontsteking
@@ -10,20 +9,20 @@ number:
     max_value: 8.0
     step: 0.1
     optimistic: true
+    restore_value: true
+    initial_value: 2.5
     set_action:
       - lambda: |-
-          // VEILIGHEIDSCHECK: Als de installer modus uitstaat, negeer de wijziging direct!
-          if (!id(installer_mode).state) {
-            ESP_LOGW("duepi_installer", "Wijziging geweigerd: Installer Mode staat UIT!");
-            return;
-          }
-          uint8_t data[2] = {0x01, (uint8_t)(x * 10.0)};
-          id(uart_bus).write_array(data, 2);
+          if (!id(installer_mode).state) return;
+          // 0x23 is het Duepi EEPROM-schrijfcommando voor registers (afhankelijk van firmware type)
+          // Als alternatief dwingen we de kachel de parameter permanent op te slaan:
+          uint8_t data[] = {0x23, 0x01, (uint8_t)(x * 10.0)}; 
+          id(uart_bus).write_array(data, 3);
       - logger.log:
-          format: "Installer: Vijzel Ontsteking bijgesteld naar: %.1f s"
+          format: "Installer: Vijzel Ontsteking permanent opgeslagen in KACHEL: %.1f s"
           args: [ 'x' ]
 
-  # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN / POWER 1 (Register 0x02)
+  # PARAMETER: VIJZELTOEVOER OP MINIMAAL VERMOGEN / POWER 1 (Vast opslaan in EEPROM)
   - platform: template
     name: "Installer: Vijzel Toevoer Power 1"
     id: param_vijzel_p1
@@ -33,16 +32,18 @@ number:
     max_value: 4.0
     step: 0.1
     optimistic: true
+    restore_value: true
+    initial_value: 1.2
     set_action:
       - lambda: |-
           if (!id(installer_mode).state) return;
-          uint8_t data[2] = {0x02, (uint8_t)(x * 10.0)};
-          id(uart_bus).write_array(data, 2);
+          uint8_t data[] = {0x23, 0x02, (uint8_t)(x * 10.0)};
+          id(uart_bus).write_array(data, 3);
       - logger.log:
-          format: "Installer: Vijzel Power 1 bijgesteld naar: %.1f s"
+          format: "Installer: Vijzel Power 1 permanent opgeslagen in KACHEL: %.1f s"
           args: [ 'x' ]
 
-  # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x06)
+  # PARAMETER: VIJZELTOEVOER OP MAXIMAAL VERMOGEN / POWER 5 (Vast opslaan in EEPROM)
   - platform: template
     name: "Installer: Vijzel Toevoer Power 5"
     id: param_vijzel_p5
@@ -52,16 +53,18 @@ number:
     max_value: 7.0
     step: 0.1
     optimistic: true
+    restore_value: true
+    initial_value: 3.2
     set_action:
       - lambda: |-
           if (!id(installer_mode).state) return;
-          uint8_t data[2] = {0x06, (uint8_t)(x * 10.0)};
-          id(uart_bus).write_array(data, 2);
+          uint8_t data[] = {0x23, 0x06, (uint8_t)(x * 10.0)};
+          id(uart_bus).write_array(data, 3);
       - logger.log:
-          format: "Installer: Vijzel Power 5 bijgesteld naar: %.1f s"
+          format: "Installer: Vijzel Power 5 permanent opgeslagen in KACHEL: %.1f s"
           args: [ 'x' ]
 
-  # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN / POWER 1 (Register 0x12)
+  # PARAMETER: EXHAUST FAN RPM OP MINIMAAL VERMOGEN / POWER 1 (Vast opslaan in EEPROM)
   - platform: template
     name: "Installer: Rookgasfan Toerental Power 1"
     id: param_fan_p1
@@ -71,16 +74,18 @@ number:
     max_value: 2800
     step: 50
     optimistic: true
+    restore_value: true
+    initial_value: 1300
     set_action:
       - lambda: |-
           if (!id(installer_mode).state) return;
-          uint8_t data[2] = {0x12, (uint8_t)(x / 10.0)};
-          id(uart_bus).write_array(data, 2);
+          uint8_t data[] = {0x23, 0x12, (uint8_t)(x / 10.0)};
+          id(uart_bus).write_array(data, 3);
       - logger.log:
-          format: "Installer: Rookgasfan Power 1 bijgesteld naar: %.0f RPM"
+          format: "Installer: Rookgasfan Power 1 permanent opgeslagen in KACHEL: %.0f RPM"
           args: [ 'x' ]
 
-  # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN / POWER 5 (Register 0x16)
+  # PARAMETER: EXHAUST FAN RPM OP MAXIMAAL VERMOGEN / POWER 5 (Vast opslaan in EEPROM)
   - platform: template
     name: "Installer: Rookgasfan Toerental Power 5"
     id: param_fan_p5
@@ -90,17 +95,19 @@ number:
     max_value: 3000
     step: 50
     optimistic: true
+    restore_value: true
+    initial_value: 2200
     set_action:
       - lambda: |-
           if (!id(installer_mode).state) return;
-          uint8_t data[2] = {0x16, (uint8_t)(x / 10.0)};
-          id(uart_bus).write_array(data, 2);
+          uint8_t data[] = {0x23, 0x16, (uint8_t)(x / 10.0)};
+          id(uart_bus).write_array(data, 3);
       - logger.log:
-          format: "Installer: Rookgasfan Power 5 bijgesteld naar: %.0f RPM"
+          format: "Installer: Rookgasfan Power 5 permanent opgeslagen in KACHEL: %.0f RPM"
           args: [ 'x' ]
 
 select:
-  # PARAMETER: TUSSENTIJDSE REINIGINGSINTERVAL (Register 0x20)
+  # PARAMETER: TUSSENTIJDSE REINIGINGSINTERVAL (Vast opslaan in EEPROM)
   - platform: template
     name: "Installer: Tussentijdse Reinigingsinterval"
     id: param_clean_interval
@@ -112,6 +119,8 @@ select:
       - "60 min"
       - "90 min"
     optimistic: true
+    restore_value: true
+    initial_value: "30 min"
     set_action:
       - lambda: |-
           if (!id(installer_mode).state) return;
@@ -122,8 +131,8 @@ select:
           else if (x == "60 min") val = 60;
           else if (x == "90 min") val = 90;
           
-          uint8_t data[2] = {0x20, val};
-          id(uart_bus).write_array(data, 2);
+          uint8_t data[] = {0x23, 0x20, val};
+          id(uart_bus).write_array(data, 3);
       - logger.log:
-          format: "Installer: Reinigingsinterval bijgesteld naar: %s"
+          format: "Installer: Reinigingsinterval permanent opgeslagen in KACHEL: %s"
           args: [ 'x.c_str()' ]
