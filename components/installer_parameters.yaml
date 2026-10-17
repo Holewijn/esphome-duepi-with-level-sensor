@@ -120,8 +120,7 @@ select:
       - "90 min"
     optimistic: true
     restore_value: true
-    # HIER GEMUTEERD: initial_value vervangen door default_target
-    default_target: "30 min"
+    # ZOWEL initial_value ALS default_target ZIJN HIER VOLLEDIG VERWIJDERD
     set_action:
       - lambda: |-
           if (!id(installer_mode).state) return;
