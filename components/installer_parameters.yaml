@@ -1,13 +1,4 @@
 # In components/installer_parameters.yaml
-
-switch:
-  - platform: template
-    name: "Activeer Installer Mode"
-    id: installer_mode
-    icon: "mdi:shield-lock-open"
-    optimistic: true
-    restore_mode: ALWAYS_OFF # Zorgt ervoor dat de modus na stroomuitval altijd veilig UIT staat
-
 number:
   # PARAMETER: VIJZELTOEVOER TIJDENS ONTSTEKING (Register 0x01)
   - platform: template
