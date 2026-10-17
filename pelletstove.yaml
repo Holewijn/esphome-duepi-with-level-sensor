@@ -66,25 +66,35 @@ packages:
 # Fysieke Basis Niveausensor & Dynamische HA Kalibratie
 # ========================================================
 sensor:
-  # De fysieke sensor leest de afstand en slaat deze intern op in METERS
+  # De fysieke sensor leest de afstand nu VEEL rustiger en gefilterd
   - platform: ultrasonic
     trigger_pin: GPIO23  
     echo_pin: GPIO22     
     id: ruwe_afstand_sensor_intern
     internal: true
-    update_interval: 10s
-    # Vertel de sensor dat je bunker nooit dieper is dan 1 meter (stopt de 19m time-out direct)
+    # AANGEPAST: Meet nu om de 60 seconden in plaats van elke 10 seconden. 
+    # Dit geeft de lucht in de bunker rust en bespaart energie.
+    update_interval: 60s
     timeout: 1.0m 
     filters:
-      # 1. Neem het gemiddelde van 5 metingen tegen de ruis
+      # 1. MEDIAN FILTER: Neemt 7 metingen, sorteert ze en pakt de middelste. 
+      # Dit trapt 99% van alle plotselinge 'hoge pieken' direct in de prullenbak!
       - median:
-          window_size: 5
-          send_every: 5
+          window_size: 7
+          send_every: 1
           send_first_at: 1
-      # 2. Gooi foutieve metingen (NAN) direct weg
+      
+      # 2. EXPONENTIAL MOVING AVERAGE: Zorgt voor een extreem vloeiende lijn.
+      # Een waarde van 0.1 betekent dat een nieuwe meting voor slechts 10% meetelt.
+      # Hierdoor stijgt of daalt de sensor heel rustig zonder sprongen.
+      - exponential_moving_average:
+          alpha: 0.1
+          send_every: 1
+
+      # 3. VERWIJDER APART METINGEN (NAN)
       - filter_out: NAN
-      # 3. C++ Code: Als de meting boven de 0.80 meter komt, is het de bekende 19-meter fout. 
-      # We weigeren deze waarde (return {}) zodat je kachel niet naar 0% schiet.
+
+      # 4. CRITICAL BOUNDARY CHECK: Gooi de bekende 19-meter time-out fouten weg
       - lambda: |-
           if (x > 0.80) {
             return {}; 
@@ -99,7 +109,7 @@ sensor:
     icon: "mdi:heater"
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    update_interval: 10s
+    update_interval: 60s # Ook deze synchroniseren we naar 60s
     lambda: |-
       float ruw = id(ruwe_afstand_sensor_intern).state;
       float leeg = id(kalibratie_leeg).state;
