@@ -6,7 +6,6 @@ switch:
     id: installer_mode
     icon: "mdi:shield-lock-open"
     optimistic: true
-    initial_state: false
     restore_mode: ALWAYS_OFF # Zorgt ervoor dat de modus na stroomuitval altijd veilig UIT staat
 
 number:
